@@ -38,6 +38,16 @@ i386_init(void)
 	// Test the stack backtrace function (lab 1 only)
 	test_backtrace(5);
 
+    // TODO: Lab1 add somthing.
+	cprintf("Lab1_Exercise_8:\n");
+    int x = 1, y = 3, z = 4;
+    //
+Lab1_exercise8_3:
+    cprintf("x %d, y %x, z %d\n", x, y, z);
+
+    unsigned int i = 0x00646c72;
+    cprintf("H%x Wo%s\n", 57616, &i);
+
 	// Drop into the kernel monitor.
 	while (1)
 		monitor(NULL);

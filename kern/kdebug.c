@@ -179,7 +179,13 @@ debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
 	//	Look at the STABS documentation and <inc/stab.h> to find
 	//	which one.
 	// Your code here.
-
+	// TODO: self
+	stab_binsearch(stabs, &lline, &rline, N_SLINE, addr);
+	if(lline > rline) {
+		return -1;
+	}
+	// 为什么是desc 因为n_value存储的是相对于fn_addr的偏移字节地址 addr就是这个地址 desc才是代码的行号 所以是使用n_value查找对应的desc
+	info->eip_line = stabs[lline].n_desc; // n_desc而不是n_value
 
 	// Search backwards from the line number for the relevant filename
 	// stab.
