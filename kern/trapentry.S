@@ -48,8 +48,64 @@
  */
 
 
+TRAPHANDLER_NOEC(th0, 0)
+TRAPHANDLER_NOEC(th1, 1)//reserved
+TRAPHANDLER_NOEC(th2, 2)//reserved
+TRAPHANDLER_NOEC(th3, 3)
+TRAPHANDLER_NOEC(th4, 4)
+TRAPHANDLER_NOEC(th5, 5)
+TRAPHANDLER_NOEC(th6, 6)
+TRAPHANDLER_NOEC(th7, 7)
+TRAPHANDLER(th8, 8)
+TRAPHANDLER_NOEC(th9, 9)//reserved
+TRAPHANDLER(th10, 10)
+TRAPHANDLER(th11, 11)
+TRAPHANDLER(th12, 12)
+TRAPHANDLER(th13, 13)
+TRAPHANDLER(th14, 14)
+TRAPHANDLER_NOEC(th15, 15)//reserved
+TRAPHANDLER_NOEC(th16, 16)
+TRAPHANDLER(th17, 17)
+TRAPHANDLER_NOEC(th18, 18)
+TRAPHANDLER_NOEC(th19, 19)
+
+TRAPHANDLER_NOEC(th_syscall, T_SYSCALL)
 
 /*
  * Lab 3: Your code here for _alltraps
  */
 
+/*
+	Your _alltraps should:
+	1. push values to make the stack look like a struct Trapframe
+	2. load GD_KD into %ds and %es
+	3. pushl %esp to pass a pointer to the Trapframe as an argument to trap()
+	4. call trap (can trap ever return?)
+ */
+// according to the TrapFrame, now processor have pushed the regs of ss,esp,eflags,cs,eip,err, so we have to push ds,es and 8 common regs.
+
+_alltraps:
+push %ds
+push %es
+pushal
+	/*
+		指向内核数据段
+		硬件中断时已经把CPU设置为了GD_KT也就是内核代码段 剩下的还有ds es 既然已经save了就应该修改了
+	*/ 
+movl $GD_KD, %eax
+movw %ax, %ds
+movw %ax, %es
+	/*
+		为什么需要压入esp?
+		因为trap函数的定义中有参数，需要push一个参数:
+		trap(struct TrapFrame* tf)
+		而我们现在esp指向的起始就是一个TrapFrame的起始地址(按照TrapFrame逆向压入的结果嘛)
+		所以把esp压入就是把参数tf压入
+	*/
+pushl %esp
+call trap
+popal
+popl %es
+popl %ds
+addl $8, %esp  // 为什么需要add $8??
+iret
