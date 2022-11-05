@@ -104,3 +104,6 @@ _pgfault_upcall:
 	// LAB 4: Your code here.
 	// TODO:
 	ret   // pop eip
+	// 为什么这里使用ret而不是iret呢 因为TramFrame和UTrapFrame的结构不一样 所以不能像TrapFrame那样直接iret的
+	// 才需要修改esp-=4 = eip 然后ret的复杂方式
+	// 为什么采用这种复杂方式呢? 主要是其他方式会修改寄存器 不能恢复到原状态 所以不得已如此
