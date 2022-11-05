@@ -260,6 +260,8 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Enable interrupts while in user mode.
 	// LAB 4: Your code here.
+	// TODO: self-code
+	e->env_tf.tf_eflags |= FL_IF;
 
 	// Clear the page fault handler until user installs one.
 	e->env_pgfault_upcall = 0;
@@ -293,17 +295,15 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
 	// TODO: self-code
-	void *v = ROUNDDOWN(va, PGSIZE);
-	size_t l = ROUNDUP(len, PGSIZE);
-	for(uint32_t i=0;i<l;i+=PGSIZE) {
-		struct PageInfo* p =page_alloc(0);
-		if(!p) {
-			panic("region_alloc :%e", -E_NO_MEM);
+	void *begin = ROUNDDOWN(va, PGSIZE);
+	void *end = ROUNDUP(va + len, PGSIZE);
+	while(begin < end) {
+		struct PageInfo *pg = page_alloc(0);
+		if (!pg) {
+			panic("region_alloc failed\n");
 		}
-		assert(!page_insert(e->env_pgdir, p, v, PTE_U | PTE_W));
-		v += PGSIZE;
-
-		assert(v > va && i < len);
+		page_insert(e->env_pgdir, pg, begin, PTE_W | PTE_U);
+		begin += PGSIZE;
 	}
 }
 
@@ -379,6 +379,8 @@ load_icode(struct Env *e, uint8_t *binary)
 			}
 		}
 	}
+	lcr3(PADDR(kern_pgdir));
+	e->env_tf.tf_eip = ELFHDR->e_entry;
 	
 
 	// Now map one page for the program's initial stack
@@ -388,8 +390,6 @@ load_icode(struct Env *e, uint8_t *binary)
 	// TODO:
 	// alloc physical memory and map va->pa in env_pgdir.
 	region_alloc(e, (void*)(USTACKTOP - PGSIZE), PGSIZE); 
-	lcr3(PADDR(kern_pgdir));
-	e->env_tf.tf_eip = ELFHDR->e_entry;
 }
 
 //
@@ -543,9 +543,11 @@ env_run(struct Env *e)
 		curenv->env_status = ENV_RUNNABLE;
 	}
 	curenv = e;
-	curenv->env_status = ENV_RUNNING;
-	curenv->env_runs++;
+	e->env_status = ENV_RUNNING;
+	e->env_runs++;
 	lcr3(PADDR(e->env_pgdir));
+	// TODO: 
+	unlock_kernel();
 	env_pop_tf(&(e->env_tf));
 
 	// panic("env_run not yet implemented");

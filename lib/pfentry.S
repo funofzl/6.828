@@ -65,18 +65,42 @@ _pgfault_upcall:
 	// ways as registers become unavailable as scratch space.
 	//
 	// LAB 4: Your code here.
+	// TODO: self-code
+	// 我们的目的是将trap time的esp-4 也就是向低地址移动一格 放置用于ret用的trap time的eip
+	add $8, %esp // now esp -> regular regs
+	movl 40(%esp), %eax
+    movl 32(%esp), %ebx
+    subl $4, %eax
+    movl %eax, 40(%esp)
+    movl %ebx, (%eax)
+	/*
+	subl $4, 0x28(%esp)   // trap time esp -= 4
+	movl 0x28(%esp), %edx
+	movl 0x20(%esp), %eax  // 先将trap eip 取出来 临时存放在eax 后面popal了就用不了eax了 所以需要在这里写
+	movl %eax, (%edx)
+	*/
+
 
 	// Restore the trap-time registers.  After you do this, you
 	// can no longer modify any general-purpose registers.
 	// LAB 4: Your code here.
+	// TODO:
+	popal
 
 	// Restore eflags from the stack.  After you do this, you can
 	// no longer use arithmetic operations or anything else that
 	// modifies eflags.
 	// LAB 4: Your code here.
+	// TODO:
+	addl $4, %esp  // esp -> eflags
+	popfl
 
 	// Switch back to the adjusted trap-time stack.
 	// LAB 4: Your code here.
+	// TODO:
+	pop %esp   // esp -> new trap esp (old trap esp - 4) which contains trap time eip.
 
 	// Return to re-execute the instruction that faulted.
 	// LAB 4: Your code here.
+	// TODO:
+	ret   // pop eip

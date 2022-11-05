@@ -279,7 +279,18 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
+	// TODO: self-code
+	size_t i;
+    size_t kstacktop_i;
+    for(i = 0; i < NCPU; i++) {
+        kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
+        boot_map_region(kern_pgdir,
+                        kstacktop_i - KSTKSIZE,
+                        KSTKSIZE,
+                        PADDR(&percpu_kstacks[i]),
+                        PTE_W );
 
+    }
 }
 
 // --------------------------------------------------------------
@@ -319,15 +330,32 @@ page_init(void)
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
 
+	// TODO: self-code
 	// 1. Mark physical page is used.
     pages[0].pp_ref = 1;
+	
+	size_t i;
+	// 2. add the page [1, pg_start) into free_list.
+	for(i=1; i<MPENTRY_PADDR/PGSIZE; i++) {
+		pages[i].pp_ref = 0;
+		pages[i].pp_link = page_free_list;
+		page_free_list = &pages[i];	
+	}
+
+	// 2. unuse the page between [pg_start, pg_end)
+	// boot APs entry code
+    extern unsigned char mpentry_start[], mpentry_end[];
+    size_t size = mpentry_end - mpentry_start;
+    size = ROUNDUP(size, PGSIZE);
+    for(;i<(MPENTRY_PADDR+size)/PGSIZE; i++) {
+        pages[i].pp_ref = 1;
+    }
 
 	// 2. the rest of base memory [PAGE, npages_basemem] corresponding to 
 	//    pages[1, npages_basemem/PGSIZE] is free, then put all these pages
 	//    to free_page_list.
 	//    Note: basemem == 640K == IOPHYSMEM, so npages_basemem = 640K/PGSIZE;
-	size_t i;
-	for (i = 1; i < npages_basemem; i++) {
+	for (; i < npages_basemem; i++) {
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
@@ -640,7 +668,41 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+	// TODO: self-code
+	size = ROUNDUP(pa+size, PGSIZE);
+	pa = ROUNDDOWN(pa,PGSIZE);
+	size = size-pa;
+	if(base + size > MMIOLIM) panic("overflow MMIOLIM");
+	// 
+	boot_map_region(kern_pgdir, base, size, pa, PTE_W|PTE_PCD|PTE_PWT);
+	uintptr_t res = base;
+	base +=size;
+	return (void *)res;
+
+	/*
+	void *ret = (void *)base;
+    size = ROUNDUP(size, PGSIZE);
+    if (base + size > MMIOLIM || base + size < base) {
+        panic("mmio_map_region reservation overflow\n");
+    }
+
+    boot_map_region(kern_pgdir, base, size, pa, PTE_W|PTE_PCD|PTE_PWT);
+    // base 为static!
+    base += size;
+    return ret;
+	*/
+
+	/*
+	uint32_t va_start = base;
+	uint32_t va_end = ROUNDUP(va_start + size, PGSIZE);
+	if(va_end > MMIOLIM || va_end < base) {
+		panic("mmio_map_region panic: MMIOBASE:%08x, size:%d, MMIOLIM:%d\n", MMIOBASE, size, va_end);
+	}
+	base = va_end;
+	boot_map_region(kern_pgdir, va_start, size, pa, PTE_W | PTE_PCD | PTE_PWT);
+	return (void*)va_start;
+	*/
+	//panic("mmio_map_region not implemented");
 }
 
 static uintptr_t user_mem_check_addr;
