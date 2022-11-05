@@ -403,18 +403,15 @@ void
 env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
-<<<<<<< HEAD
 
 	// If this is the file server (type == ENV_TYPE_FS) give it I/O privileges.
 	// LAB 5: Your code here.
-=======
 	// TODO: self-code
 	struct Env* init_task = NULL;
 	assert(!env_alloc(&init_task, 0));
 	init_task->env_parent_id = 0;
 	init_task->env_type = type;
 	load_icode(init_task, binary);
->>>>>>> lab4
 }
 
 //
