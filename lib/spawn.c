@@ -302,6 +302,17 @@ static int
 copy_shared_pages(envid_t child)
 {
 	// LAB 5: Your code here.
+	// TODO: self-code
+	int r, i;
+	for(i= 0;i<PGNUM(USTACKTOP);i++) {
+		// only copy shared pages, not like fork which copys all pages.
+		if((uvpd[i/1024] & PTE_P) && (uvpt[i] & PTE_P) && (uvpt[i] & PTE_SHARE)) {
+			r = sys_page_map(0, PGADDR(i/1024, i%1024, 0), child, PGADDR(i/1024, i%1024, 0), uvpt[i] & PTE_SYSCALL);
+			if(r < 0) {
+				return r;
+			}
+		}
+	}
 	return 0;
 }
 
