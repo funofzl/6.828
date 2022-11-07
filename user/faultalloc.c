@@ -20,5 +20,7 @@ umain(int argc, char **argv)
 {
 	set_pgfault_handler(handler);
 	cprintf("%s\n", (char*)0xDeadBeef);
+	// 下面发生了两次page fault 因为是跨页写入 所以第一次分配后写入的时候再次发生page fault
+	// 为了测试user exception recursively.
 	cprintf("%s\n", (char*)0xCafeBffe);
 }

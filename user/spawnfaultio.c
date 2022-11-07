@@ -3,7 +3,7 @@
 void
 umain(int argc, char **argv)
 {
-	int r;
+	int r = 0;
 	cprintf("i am parent environment %08x\n", thisenv->env_id);
 	if ((r = spawnl("faultio", "faultio", 0)) < 0)
 		panic("spawn(faultio) failed: %e", r);
