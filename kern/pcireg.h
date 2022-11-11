@@ -34,6 +34,10 @@
 #ifndef _DEV_PCI_PCIREG_H_
 #define	_DEV_PCI_PCIREG_H_
 
+// TODO: self-code
+#define PCI_VENDOR_ID                           0x8086
+#define PCI_DEVICE_ID                           0x100E
+
 /*
  * Standardized PCI configuration information
  *
