@@ -22,6 +22,7 @@
 #include <inc/args.h>
 #include <inc/malloc.h>
 #include <inc/ns.h>
+#include <inc/mmap.h>
 
 #define USED(x)		(void)(x)
 
@@ -62,6 +63,9 @@ int	sys_ipc_recv(void *rcv_pg);
 unsigned int sys_time_msec(void);
 int sys_pkt_send(void*, size_t);
 int sys_pkt_recv(void*, size_t*);
+void* sys_mmap(void *addr, size_t length, int prot, int flags,
+                  int fd, off_t offset);
+int sys_munmap(void *addr, size_t len);
 
 // This must be inlined.  Exercise for reader: why?
 static inline envid_t __attribute__((always_inline))
@@ -139,6 +143,9 @@ int	pipeisclosed(int pipefd);
 
 // wait.c
 void	wait(envid_t env);
+
+// sleep.c
+void sleep(int sec);
 
 /* File open modes */
 #define	O_RDONLY	0x0000		/* open for reading only */

@@ -43,6 +43,9 @@ KERN_SRCFILES +=	kern/e100.c \
 			kern/e1000.c \
 			kern/pci.c \
 			kern/time.c
+# TODO: For mmap
+KERN_SRCFILES +=	kern/mmap.c \
+			kern/pgfault.c
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
@@ -108,6 +111,12 @@ KERN_BINFILES +=	user/testpteshare \
 			user/primespipe \
 			user/testkbd \
 			user/testshell
+
+# For mmap 
+# TODO:
+KERN_BINFILES +=	user/mmaptest \
+			user/mmaptestb \
+			user/mmaptestprivate
 
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))

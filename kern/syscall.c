@@ -14,6 +14,8 @@
 #include <kern/time.h>
 #include <kern/e1000.h>
 
+#include <kern/mmap.h>
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -466,6 +468,17 @@ int sys_pkt_recv(void* data, size_t* len) {
 	return e1000_receive(data, len);
 }
 
+void*
+sys_mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
+{
+	return my_mmap(addr, length, prot, flags, fd, offset);
+}
+
+int
+sys_munmap(void *addr, size_t len) {
+	return my_munmap(addr, len);
+}
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
@@ -528,6 +541,12 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		break;
 	case SYS_pkt_recv:
 		ret = sys_pkt_recv((void*)a1, (size_t*)a2);
+		break;
+	case SYS_mmap:
+		ret = (uint32_t)sys_mmap((void*)a1, (size_t)a2, (int)a3, (int)a3, (int)a4, (off_t)a5); // prot and flags are both in a3
+		break;
+	case SYS_munmap:
+		ret = sys_munmap((void*)a1, (size_t)a2);
 		break;
 	default:
 		return -E_INVAL;

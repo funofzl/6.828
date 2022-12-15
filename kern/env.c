@@ -15,6 +15,8 @@
 #include <kern/cpu.h>
 #include <kern/spinlock.h>
 
+#include <kern/mmap.h>
+
 struct Env *envs = NULL;		// All environments
 static struct Env *env_free_list;	// Free environment list
 					// (linked by Env->env_link)
@@ -268,6 +270,11 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Also clear the IPC receiving flag.
 	e->env_ipc_recving = 0;
+
+	// TODO:
+	// For mmap
+	e->mmap_cur = (void*)MMAP_START;
+	e->mmap_list = -1;
 
 	// commit the allocation
 	env_free_list = e->env_link;

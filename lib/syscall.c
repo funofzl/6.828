@@ -134,3 +134,15 @@ sys_pkt_recv(void* data, size_t* len)
 {
 	return (int) syscall(SYS_pkt_recv, 1, (uint32_t)data, (uint32_t)len, 0, 0, 0);
 }
+
+void*
+sys_mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
+{
+	return (void*)syscall(SYS_mmap, 0, (uint32_t)addr, length, prot | flags, fd, offset); // prot和flags凑合吧
+}
+
+int
+sys_munmap(void *addr, size_t len)
+{
+	return (int) syscall(SYS_munmap, 0, (uint32_t)addr, (uint32_t)len, 0, 0, 0);
+}

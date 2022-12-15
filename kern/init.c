@@ -17,6 +17,8 @@
 #include <kern/time.h>
 #include <kern/pci.h>
 
+#include <kern/mmap.h>
+
 static void boot_aps(void);
 
 
@@ -55,12 +57,16 @@ i386_init(void)
 	// Starting non-boot CPUs
 	boot_aps();
 
+	// For mmap
+	// TODO:
+	mmap_region_init();
+
 	// Start fs.
 	ENV_CREATE(fs_fs, ENV_TYPE_FS);
 
 #if !defined(TEST_NO_NS)
 	// Start ns.
-	ENV_CREATE(net_ns, ENV_TYPE_NS);
+	//ENV_CREATE(net_ns, ENV_TYPE_NS);
 #endif
 
 #if defined(TEST)
@@ -68,7 +74,7 @@ i386_init(void)
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(user_icode, ENV_TYPE_USER);
+	//ENV_CREATE(user_icode, ENV_TYPE_USER);
 	//ENV_CREATE(user_primes, ENV_TYPE_USER);
 	
 	//ENV_CREATE(user_yield, ENV_TYPE_USER);
@@ -76,6 +82,7 @@ i386_init(void)
 	//ENV_CREATE(user_yield, ENV_TYPE_USER);
 	
 	//ENV_CREATE(user_dumbfork, ENV_TYPE_USER);
+	ENV_CREATE(user_mmaptest, ENV_TYPE_USER);
 #endif // TEST*
 
 	// Should not be necessary - drains keyboard because interrupt has given up.

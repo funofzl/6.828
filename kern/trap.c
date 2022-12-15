@@ -15,6 +15,9 @@
 #include <kern/spinlock.h>
 #include <kern/time.h>
 
+#include <kern/mmap.h>
+#include <kern/pgfault.h>
+
 static struct Taskstate ts;
 
 /* For debugging, so print_trapframe can distinguish between printing
@@ -418,7 +421,16 @@ page_fault_handler(struct Trapframe *tf)
 	//   To change what the user environment runs, modify 'curenv->env_tf'
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
+	// Check if is the mmap page fault.
+    if(fault_va >= MMAP_START && fault_va < MMAP_END) {
+		cprintf("fault_va: %08x\n", fault_va);
+		mmap_pgfault_handler((void*)fault_va);
+		// 需要回到user mode.
+		env_run(curenv);
+    } 
 	// LAB 4: Your code here.
+	// 自己在应用程序中通过系统调用sys_set_pgfault_upcall设置_pgfault_upcall这个User exception Stack的入口点
+	// 然后调用真正的pgfault_handler，之后再返回Normal User space.
 	if (curenv->env_pgfault_upcall) {
 		uintptr_t stacktop = UXSTACKTOP;
 		if (UXSTACKTOP - PGSIZE < tf->tf_esp && tf->tf_esp < UXSTACKTOP) {

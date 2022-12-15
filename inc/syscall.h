@@ -20,6 +20,8 @@ enum {
 	SYS_time_msec,
 	SYS_pkt_send,
 	SYS_pkt_recv,
+	SYS_mmap,
+	SYS_munmap,
 	NSYSCALLS
 };
 
